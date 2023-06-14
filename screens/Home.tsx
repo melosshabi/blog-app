@@ -10,7 +10,10 @@ import {auth} from '../firebase/firebase'
 import { FlatList, TextInput } from 'react-native-gesture-handler'
 import Snackbar from 'react-native-snackbar'
 import { parseDate } from '../assets/functions'
+import { DrawerScreenProps } from '@react-navigation/drawer'
+import { componentProps } from '../App'
 
+export type HomeProps = DrawerScreenProps<componentProps, 'Home'>
 interface Posts{
   authorDetails:{
     authorEmail:string;
@@ -28,9 +31,10 @@ interface Posts{
   docId:string;
 }
 
-export default function Home() {
-  
-
+export default function Home({route}: HomeProps) {
+  useEffect(() => {
+    // auth.onAuthStateChanged(() => {console.log(auth.currentUser)})
+  }, [])
   const [dots] = useState(require('../assets/images/dots.png'))
 
   const [posts, setPosts] = useState<Posts[]>([])
@@ -42,6 +46,13 @@ export default function Home() {
   const [postToEditContent, setPostToEditContent] = useState('')
 
   useEffect(() => {
+    
+    if(route.params?.fromSignUp){
+    Snackbar.show({
+      text:"Account created successfully",
+      duration:Snackbar.LENGTH_LONG
+    })}
+
     async function fetchPosts(){
       const postsRef = collection(db, 'posts')
       const postsQuery = query(postsRef, orderBy('createdAt'))

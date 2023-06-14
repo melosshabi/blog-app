@@ -1,12 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
-import { DrawerItem, createDrawerNavigator } from '@react-navigation/drawer'
+import { DrawerItem, createDrawerNavigator, DrawerScreenProps } from '@react-navigation/drawer'
 import { NavigationContainer } from '@react-navigation/native'
-import Home from './screens/Home'
-import CreatePost from './screens/CreatePost'
-import UserPosts from './screens/UserPosts'
-import Profile from './screens/Profile'
+// Utils
 import colors from './assets/colors'
+// Screens
+import Home from './screens/Home'
+import Profile from './screens/Profile'
+import UserPosts from './screens/UserPosts'
+import CreatePost from './screens/CreatePost'
+import SignIn from './screens/SignIn'
+import SignUp from './screens/SignUp'
 
 function DrawerContent({navigation} : any){
   return (
@@ -19,14 +23,23 @@ function DrawerContent({navigation} : any){
        <DrawerItem label="My posts" style={styles.drawerBtns} labelStyle={styles.drawerBtnsText} onPress={() => navigation.navigate('MyPosts')}/>
       </View>
       <View style={styles.authBtnsWrapper}>
-        <DrawerItem label="Sign in" onPress={() => console.log("")} style={[styles.drawerBtns, styles.authBtns]} labelStyle={styles.authBtnsText} />
-        <DrawerItem label="Sign up" onPress={() => console.log("")} style={[styles.drawerBtns, styles.authBtns]} labelStyle={styles.authBtnsText} />
+        <DrawerItem label="Sign in" onPress={() => navigation.navigate('SignIn')} style={[styles.drawerBtns, styles.authBtns]} labelStyle={styles.authBtnsText} />
+        <DrawerItem label="Sign up" onPress={() => navigation.navigate('SignUp')} style={[styles.drawerBtns, styles.authBtns]} labelStyle={styles.authBtnsText} />
       </View>
     </View>
   )
 }
 
-const Drawer = createDrawerNavigator()
+export type componentProps = {
+  Home:{fromSignUp: boolean} | undefined;
+  CreatePost:undefined;
+  MyProfile:undefined;
+  MyPosts:undefined;
+  SignUp:undefined;
+  SignIn:undefined
+}
+
+const Drawer = createDrawerNavigator<componentProps>()
 
 export default function App() {
   return (
@@ -53,6 +66,8 @@ export default function App() {
         <Drawer.Screen name="CreatePost" component={CreatePost} options={{title:"Create Post"}}/>
         <Drawer.Screen name="MyProfile" component={Profile} options={{title:"My Profile"}}/>
         <Drawer.Screen name="MyPosts" component={UserPosts} options={{title:"My Posts"}}/>
+        <Drawer.Screen name="SignUp" component={SignUp} options={{title:"Sign Up"}}/>
+        <Drawer.Screen name="SignIn" component={SignIn} options={{title:"Sign In"}}/>
       </Drawer.Navigator>
     </NavigationContainer>
   )
