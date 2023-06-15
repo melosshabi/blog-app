@@ -14,7 +14,7 @@ import { DrawerScreenProps } from '@react-navigation/drawer'
 import { componentProps } from '../App'
 
 export type HomeProps = DrawerScreenProps<componentProps, 'Home'>
-interface Posts{
+export interface Posts{
   authorDetails:{
     authorEmail:string;
     authorName:string;
@@ -45,41 +45,51 @@ export default function Home({route}: HomeProps) {
   // This variable holds the content of the post which the user is going to edit
   const [postToEditContent, setPostToEditContent] = useState('')
 
-  useEffect(() => {
-    
-    if(route.params?.fromSignUp){
-    Snackbar.show({
-      text:"Account created successfully",
-      duration:Snackbar.LENGTH_LONG
-    })}
-
-    async function fetchPosts(){
-      const postsRef = collection(db, 'posts')
-      const postsQuery = query(postsRef, orderBy('createdAt'))
-      let tempArr: Posts[] = []
-      const response = await getDocs(postsQuery)
-      response.docs.map(doc => {
-        tempArr.push({
-          authorDetails:{
-            authorEmail:doc.data().authorDetails.authorEmail,
-            authorName:doc.data().authorDetails.authorName,
-            authorProfilePicture:doc.data().authorDetails.authorProfilePicture,
-            userId:doc.data().authorDetails.id
-          },
-          title:doc.data().title,
-          blog:doc.data().blog,
-          createdAt:doc.data().createdAt,
-          picture:doc.data().picture,
-          pictureName:doc.data().pictureName,
-          video:doc.data().video,
-          videoName: doc.data().videoName,
-          docId:doc.id
-        })
+  async function fetchPosts(){
+    const postsRef = collection(db, 'posts')
+    const postsQuery = query(postsRef, orderBy('createdAt'))
+    let tempArr: Posts[] = []
+    const response = await getDocs(postsQuery)
+    response.docs.map(doc => {
+      tempArr.push({
+        authorDetails:{
+          authorEmail:doc.data().authorDetails.authorEmail,
+          authorName:doc.data().authorDetails.authorName,
+          authorProfilePicture:doc.data().authorDetails.authorProfilePicture,
+          userId:doc.data().authorDetails.id
+        },
+        title:doc.data().title,
+        blog:doc.data().blog,
+        createdAt:doc.data().createdAt,
+        picture:doc.data().picture,
+        pictureName:doc.data().pictureName,
+        video:doc.data().video,
+        videoName: doc.data().videoName,
+        docId:doc.id
       })
-    setPosts(tempArr)
-  }
+    })
+  setPosts(tempArr)
+}
+
+  useEffect(() => {
     fetchPosts()
   }, [])
+  
+  useEffect(() =>{
+    if(route.params?.fromSignUp){
+      Snackbar.show({
+        text:"Account created successfully",
+        duration:Snackbar.LENGTH_LONG
+      })
+    }
+    if(route.params?.fromCreatePost){
+      Snackbar.show({
+        text:"Post was created successfully",
+        duration:Snackbar.LENGTH_LONG
+      })
+      fetchPosts()
+    }
+  }, [route.params])
   
   const savePost = async () => {
    if(postToEditContent === ""){

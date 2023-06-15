@@ -18,7 +18,7 @@ type HomeProps = {
 export default function SignUp() {
     useEffect(() => {
         auth.onAuthStateChanged(() => {
-            if(!auth.currentUser === null){
+            if(auth.currentUser !== null){
                 navigation.navigate('Home')
             }
         })
@@ -34,11 +34,13 @@ export default function SignUp() {
     })
 
     const createAccount = async (username:string, email:string, password:string) => {
-        setCreationInProgress(true)
-        console.log("username:", username)
-        const newUser = (await createUserWithEmailAndPassword(auth, email, password)).user
-        await updateProfile(newUser, {displayName:username})
-        navigation.navigate('Home', {fromSignUp:true})
+        const result = signUpSchema.isValidSync({username, email, password})
+        if(result){
+            setCreationInProgress(true)
+            const newUser = (await createUserWithEmailAndPassword(auth, email, password)).user
+            await updateProfile(newUser, {displayName:username})
+            navigation.navigate('Home', {fromSignUp:true})
+        }
     }
 
   return (
@@ -50,7 +52,7 @@ export default function SignUp() {
      validationSchema={signUpSchema}
      onSubmit={values => createAccount(values.username, values.email, values.password)}
     >
-     {({ handleChange, handleBlur, handleSubmit, touched, errors, values }) => (
+     {({ handleChange, handleBlur, handleSubmit, errors, values }) => (
        <View>
         {/* Username */}
          <TextInput
@@ -60,7 +62,7 @@ export default function SignUp() {
            placeholder='Username'
            style={styles.inputs}
          />
-         {touched.username && errors.username && (<Text style={styles.error}>{errors.username}</Text>)}
+         {errors.username && (<Text style={styles.error}>{errors.username}</Text>)}
          {/* Email */}
          <TextInput
            onChangeText={handleChange('email')}
@@ -68,8 +70,9 @@ export default function SignUp() {
            value={values.email}
            placeholder='Email'
            style={styles.inputs}
+           autoCapitalize='none'
          />
-         {touched.email && errors.email && (<Text style={styles.error}>{errors.email}</Text>)}
+         {errors.email && (<Text style={styles.error}>{errors.email}</Text>)}
 
          {/* Password */}
           <TextInput
@@ -78,8 +81,10 @@ export default function SignUp() {
            value={values.password}
            placeholder='Password'
            style={styles.inputs}
+           secureTextEntry={true}
+           autoCapitalize='none'
          />
-         {touched.password && errors.password && (<Text style={styles.error}>{errors.password}</Text>)}
+         {errors.password && (<Text style={styles.error}>{errors.password}</Text>)}
          <Pressable onPress={handleSubmit} style={[styles.signUpBtn, creationInProgress ? styles.disabledBtn : {}]} disabled={creationInProgress}><Text style={styles.signUpBtnText}>{creationInProgress ? 'Creating account' : 'Sign Up'}</Text></Pressable>
        </View>
      )}
