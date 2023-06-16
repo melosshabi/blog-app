@@ -76,7 +76,7 @@ export default function App() {
 
         <Drawer.Screen name="Home" component={Home} options={{unmountOnBlur:true}}/>
         <Drawer.Screen name="CreatePost" component={CreatePost} options={{title:"Create Post", unmountOnBlur:true}}/>
-        <Drawer.Screen name="MyProfile" component={Profile} options={{title:"My Profile"}}/>
+        <Drawer.Screen name="MyProfile" component={Profile} options={{title:"My Profile", unmountOnBlur:true}}/>
         <Drawer.Screen name="MyPosts" component={UserPosts} options={{title:"My Posts", unmountOnBlur:true}}/>
         <Drawer.Screen name="SignUp" component={SignUp} options={{title:"Sign Up"}}/>
         <Drawer.Screen name="SignIn" component={SignIn} options={{title:"Sign In"}}/>

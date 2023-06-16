@@ -6,10 +6,11 @@ import { TextInput } from 'react-native-gesture-handler'
 import {auth, db, storage} from '../firebase/firebase'
 import { useNavigation } from '@react-navigation/native'
 import { getDownloadURL, ref, updateMetadata, uploadBytes, uploadString } from 'firebase/storage'
-import { updateProfile } from 'firebase/auth'
+import { updateEmail, updateProfile } from 'firebase/auth'
 import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { DrawerNavigationProp } from '@react-navigation/drawer'
 import * as ImagePicker from 'react-native-image-picker'
+import Snackbar from 'react-native-snackbar'
 
 type HomeProps = {
   Home: {fromSignUp:boolean, fromCreatePost:boolean} | undefined
@@ -20,10 +21,20 @@ export default function Profile() {
 
   const navigation = useNavigation<DrawerNavigationProp<HomeProps>>()
 
+  // Current username
   const [currentName, setCurrentName] = useState<string | null>('')
+  // New username
+  const [newName, setNewName] = useState<string>('')
+  // Current email
   const [currentEmail, setCurrentEmail] = useState<string | null>('')
+  // New email
+  const [newEmail, setNewEmail] = useState<string>('')
+  // These 2 variables are used to determine whether to make the inputs editable or not
   const [userWantsToEditName, setUserWantsToEditName] = useState<boolean>(false)
   const [userWantsToEditEmail, setUserWantsToEditEmail] = useState<boolean>(false)
+  // This variable is used to determine whether to show the save button or not
+  const [showSaveBtn, setShowSaveBtn] = useState<boolean>(false)
+  const [updatingInfo, setUpdatingInfo] = useState<boolean>(false)
   const [userIcon] = useState(require('../assets/images/user.png'))
   
   useEffect(() => {
@@ -38,8 +49,6 @@ export default function Profile() {
     })
   }, [])
 
-  // This variable is used for the MIME types and the file name
-  const [image, setImage] = useState<any>()
   // This variable holds the base64 encoded image
   const [imageToUpload, setImageToUpload] = useState<any>('')
   
@@ -50,31 +59,19 @@ export default function Profile() {
       }else {
         if(response.assets){
           console.log("Image:", response.assets[0])
-          const uri = response.assets[0].uri
-          const path = await normalizePath(uri)
-          console.log('path', path)
           setImageToUpload(response.assets[0])
         }
       }
     })
   }
 
-  const normalizePath = async (path: any) => {
-    if(Platform.OS === 'android' || Platform.OS === 'ios'){
-      const filePrefix = "file://"
-      if(path.startsWith(filePrefix)){
-        path = path.substring(filePrefix.length)
-        path = decodeURI(path)
-      }
-    }
-    return path
-  }
-
   const uploadImage = async () => {
     if(auth.currentUser !== null){
       try{  
+        const response = await fetch(imageToUpload.uri)
+        const blob = await response.blob()
         const pictureRef = ref(storage, `Profile Pictures/${`ProfilePictureOf` + auth.currentUser.uid}`)
-        await uploadBytes(pictureRef, imageToUpload)
+        await uploadBytes(pictureRef, blob)
         const imageUrl = await getDownloadURL(pictureRef)
         await updateProfile(auth.currentUser, {photoURL:imageUrl})
         // await updateDocs()
@@ -84,15 +81,48 @@ export default function Profile() {
     }
   }
 
+  const saveChanges = async () => {
+    setUpdatingInfo(true)
+    setUserWantsToEditEmail(false)
+    setUserWantsToEditName(false)
+    await updateDocs()
+  }
+
   const updateDocs = async () => {
-  
+
       const docsRef = collection(db, 'posts')
       const postsQuery = query(docsRef, where('authorDetails.id', '==', auth.currentUser?.uid))
       const snapshot = await getDocs(postsQuery)
-      for(let i = 0; i < snapshot.docs.length; i ++){
+
+      if(newName || newEmail){
+        if(auth.currentUser !== null){
+          await updateProfile(auth.currentUser, {displayName:newName})
+          await updateEmail(auth.currentUser, newEmail)
+        }
+      }
+
+      for(let i = 0; i < snapshot.docs.length; i++){
         const docRef = doc(db, 'posts', snapshot.docs[i].id)
-        if(imageToUpload){
-          await updateDoc(docRef, {authorDetails:{authorProfilePicture:auth.currentUser?.photoURL}})
+
+        // if(imageToUpload){
+        //   await updateDoc(docRef, {authorDetails:{authorProfilePicture:auth.currentUser?.photoURL}})
+        // }
+
+        if(newName || newEmail){
+          if(auth.currentUser !== null){
+            console.log("Gonna update docs")
+              await updateDoc(docRef, {authorDetails:{
+                id:auth.currentUser.uid,
+                authorEmail:auth.currentUser.email,
+                authorName:auth.currentUser.displayName,
+                authorProfilePicture:auth.currentUser.photoURL,
+              }}).then(res => console.log(res)).catch(err => console.log(err))
+            setShowSaveBtn(false)
+            Snackbar.show({
+              text:"Profile updated",
+              duration:Snackbar.LENGTH_LONG
+            })
+          }
         }
       }
   }
@@ -106,14 +136,22 @@ export default function Profile() {
             
             <View style={styles.inputWrapper}>
               <Text style={styles.inputLabels}>Username</Text>
-              <TextInput style={[styles.inputs, !userWantsToEditName ? styles.disabledInputs : {}]} placeholder={currentName !== null ? currentName : ''} editable={userWantsToEditName}/>
+              <TextInput style={[styles.inputs, !userWantsToEditName ? styles.disabledInputs : {}]} placeholder={currentName !== null ? currentName : ''} editable={userWantsToEditName} value={newName} onChangeText={setNewName}/>
+              <Pressable style={styles.editBtns} onPress={() => {
+                setUserWantsToEditName(true)
+                setShowSaveBtn(true)
+                }}><Text style={styles.editBtnsText}>Change Username</Text></Pressable>
             </View>
 
             <View style={styles.inputWrapper}>
               <Text style={styles.inputLabels}>Email</Text>
-              <TextInput style={[styles.inputs, !userWantsToEditEmail ? styles.disabledInputs : {}]} placeholder={currentEmail !== null ? currentEmail : ''} editable={userWantsToEditEmail}/>
+              <TextInput style={[styles.inputs, !userWantsToEditEmail ? styles.disabledInputs : {}]} placeholder={currentEmail !== null ? currentEmail : ''} editable={userWantsToEditEmail} value={newEmail} onChangeText={setNewEmail}/>
+              <Pressable style={styles.editBtns} onPress={() => {
+                setUserWantsToEditEmail(true)
+                setShowSaveBtn(true)
+                }}><Text style={styles.editBtnsText}>Change Email</Text></Pressable>
             </View>
-
+              {showSaveBtn && <Pressable style={[styles.saveBtn, updatingInfo ? {opacity:.6} : {}]} disabled={updatingInfo} onPress={saveChanges}><Text style={{color:'white'}}>{!updatingInfo ? 'Save changes' : 'Saving changes'}</Text></Pressable>}
             <View style={styles.inputWrapper}>
               <Text style={styles.inputLabels}>Password</Text>
               <Pressable style={styles.resetBtn}><Text style={{color:'white'}}>Send password reset email</Text></Pressable>
@@ -182,6 +220,28 @@ const styles = StyleSheet.create({
   disabledInputs:{
     opacity:.6
   },
+  editBtns:{
+    marginTop:10,
+    paddingVertical:5,
+    paddingHorizontal:10,
+    borderColor:'white',
+    borderWidth:1,
+    borderRadius:5
+  },
+  editBtnsText:{
+    color:'white',
+    fontSize:15
+  },
+  // The style of the button that saves the username and email
+  saveBtn:{
+    marginTop:20,
+    paddingHorizontal:10,
+    paddingVertical:5,
+    borderRadius:5,
+    borderColor:"white",
+    borderWidth:1
+  },
+  // The reset button style
   resetBtn:{
     marginTop:25,
     padding:15,
