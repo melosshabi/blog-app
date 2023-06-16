@@ -1,4 +1,6 @@
-import { Dimensions, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { FlatList, TextInput } from 'react-native-gesture-handler'
+import { DrawerScreenProps } from '@react-navigation/drawer'
 import React, { useEffect, useState } from 'react'
 // import VideoPlayer from 'react-native-video-player'
 import Video from 'react-native-video'
@@ -7,10 +9,11 @@ import colors from '../assets/colors'
 import {collection, getDocs, query, orderBy, deleteDoc, doc, updateDoc} from 'firebase/firestore'
 import {db} from '../firebase/firebase'
 import {auth} from '../firebase/firebase'
-import { FlatList, TextInput } from 'react-native-gesture-handler'
+// Components
 import Snackbar from 'react-native-snackbar'
+// Functions
 import { parseDate } from '../assets/functions'
-import { DrawerScreenProps } from '@react-navigation/drawer'
+// Props
 import { componentProps } from '../App'
 
 export type HomeProps = DrawerScreenProps<componentProps, 'Home'>
@@ -36,6 +39,7 @@ export default function Home({route}: HomeProps) {
     // auth.onAuthStateChanged(() => {console.log(auth.currentUser)})
   }, [])
   const [dots] = useState(require('../assets/images/dots.png'))
+  const [userIcon] = useState(require('../assets/images/user.png'))
 
   const [posts, setPosts] = useState<Posts[]>([])
   const [deviceWidth] = useState(Dimensions.get('window').width - 30)
@@ -139,7 +143,7 @@ export default function Home({route}: HomeProps) {
             <View style={styles.authorWrapper}>
 
               <View style={{flexDirection:'row', alignItems:'center'}}>
-                <Image source={{uri:item.authorDetails.authorProfilePicture}} style={{width:40, height:40, borderRadius:20, marginRight:15}}/>
+                <Image source={item.authorDetails.authorProfilePicture ? {uri: item.authorDetails.authorProfilePicture} : userIcon} style={{width:40, height:40, borderRadius:20, marginRight:15}}/>
                 <Text style={styles.author}>@{item.authorDetails.authorName}</Text>
               </View>
 

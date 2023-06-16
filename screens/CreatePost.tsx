@@ -41,7 +41,7 @@ export default function CreatePost() {
       authorDetails:{
         authorEmail:auth.currentUser.email,
         authorName:auth.currentUser.displayName,
-        authorProfilePicture:'',
+        authorProfilePicture:auth.currentUser.photoURL,
         id:auth.currentUser.uid
       },
       title,

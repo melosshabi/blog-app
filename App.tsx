@@ -56,7 +56,7 @@ const Drawer = createDrawerNavigator<componentProps>()
 export default function App() {
   return (
     <NavigationContainer>
-      <Drawer.Navigator screenOptions={{
+      <Drawer.Navigator initialRouteName="MyProfile" screenOptions={{
         drawerStyle:{
           backgroundColor:colors.gray,
           borderRightColor:'white',
