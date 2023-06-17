@@ -91,7 +91,6 @@ export default function Home({route}: HomeProps) {
         text:"Post was created successfully",
         duration:Snackbar.LENGTH_LONG
       })
-      fetchPosts()
     }
   }, [route.params])
   

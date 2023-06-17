@@ -9,6 +9,7 @@ import { getDownloadURL, ref, updateMetadata, uploadBytes, uploadString } from '
 import { updateEmail, updateProfile } from 'firebase/auth'
 import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { DrawerNavigationProp } from '@react-navigation/drawer'
+// Library for image selection
 import * as ImagePicker from 'react-native-image-picker'
 import Snackbar from 'react-native-snackbar'
 
@@ -18,7 +19,6 @@ type HomeProps = {
 
 export default function Profile() {
   
-
   const navigation = useNavigation<DrawerNavigationProp<HomeProps>>()
 
   // Current username
@@ -51,33 +51,31 @@ export default function Profile() {
 
   // This variable holds the base64 encoded image
   const [imageToUpload, setImageToUpload] = useState<any>('')
-  
-  const selectImage = async () => {
-    ImagePicker.launchImageLibrary({mediaType:'photo'}, async response => {
-      if(response.errorCode){
-        console.log("error", response.errorCode)
-      }else {
-        if(response.assets){
-          console.log("Image:", response.assets[0])
-          setImageToUpload(response.assets[0])
+  // This variable will hold the url of the image after it's been uploaded
+  const [imageUrl, setImageUrl] = useState<string>('')
+  const [uploadInProgress, setUploadInProgress] = useState<boolean>(false)
+
+
+  const selectImage = () => {
+    ImagePicker.launchImageLibrary({mediaType:'photo'}, res => {
+        if(res.assets){
+          setImageToUpload(res.assets[0])
         }
-      }
     })
   }
 
   const uploadImage = async () => {
-    if(auth.currentUser !== null){
-      try{  
+    if(auth.currentUser !== null){ 
+        setUploadInProgress(true)
         const response = await fetch(imageToUpload.uri)
         const blob = await response.blob()
         const pictureRef = ref(storage, `Profile Pictures/${`ProfilePictureOf` + auth.currentUser.uid}`)
         await uploadBytes(pictureRef, blob)
         const imageUrl = await getDownloadURL(pictureRef)
         await updateProfile(auth.currentUser, {photoURL:imageUrl})
-        // await updateDocs()
-      }catch(e){
-        console.log(e)
-      } 
+        await updateDocs()
+        setImageToUpload('')
+        setImageUrl(imageUrl)
     }
   }
 
@@ -104,31 +102,39 @@ export default function Profile() {
       for(let i = 0; i < snapshot.docs.length; i++){
         const docRef = doc(db, 'posts', snapshot.docs[i].id)
 
-        // if(imageToUpload){
-        //   await updateDoc(docRef, {authorDetails:{authorProfilePicture:auth.currentUser?.photoURL}})
-        // }
-
         if(newName || newEmail){
           if(auth.currentUser !== null){
-            console.log("Gonna update docs")
               await updateDoc(docRef, {authorDetails:{
                 id:auth.currentUser.uid,
                 authorEmail:auth.currentUser.email,
                 authorName:auth.currentUser.displayName,
                 authorProfilePicture:auth.currentUser.photoURL,
-              }}).then(res => console.log(res)).catch(err => console.log(err))
+              }})
             setShowSaveBtn(false)
-            Snackbar.show({
-              text:"Profile updated",
-              duration:Snackbar.LENGTH_LONG
-            })
+          }
+        }
+
+        if(imageToUpload){
+          if(auth.currentUser !== null){          
+            await updateDoc(docRef, {
+            authorDetails:{
+              id:auth.currentUser.uid, 
+              authorProfilePicture:auth.currentUser?.photoURL,
+              authorEmail:auth.currentUser.email,
+              authorName:auth.currentUser.displayName
+            }})
           }
         }
       }
+      setUploadInProgress(false)
+      Snackbar.show({
+        text:"Profile updated",
+        duration:Snackbar.LENGTH_LONG
+      })
   }
   return (
     <View style={styles.profile}>
-      <Text style={styles.headingText}>My Information</Text>
+      {/* <Text style={styles.headingText}>My Information</Text> */}
         <View style={styles.infoWrapper}>
 
           {/* Wrapper of username input, email input and reset password btn */}
@@ -164,11 +170,11 @@ export default function Profile() {
             <Text style={styles.pfpText}>Profile Picture</Text>
             
             <View style={styles.profilePictureWrapper}>
-              {/* <Image style={styles.profilePicture} source={auth.currentUser?.photoURL ? {uri: imageToUpload} : userIcon}/> */}
+              <Image style={styles.profilePicture} source={auth.currentUser?.photoURL ? {uri: auth.currentUser?.photoURL} : userIcon}/>
             
               <View>
                 <Pressable style={styles.choosePictureBtn} onPress={selectImage}><Text style={styles.choosePictureBtnText}>Select new picture</Text></Pressable>
-                {imageToUpload && <Pressable style={styles.choosePictureBtn} onPress={uploadImage}><Text style={styles.choosePictureBtnText}>Upload new picture</Text></Pressable>}
+                {imageToUpload && <Pressable style={[styles.choosePictureBtn, uploadInProgress ? {opacity:.6} : {}]} onPress={uploadImage} disabled={uploadInProgress}><Text style={styles.choosePictureBtnText}>{!uploadInProgress ? 'Upload new picture' : "Uploading new picture"}</Text></Pressable>}
               </View>
 
             </View>
@@ -192,9 +198,10 @@ const styles = StyleSheet.create({
   },
   infoWrapper:{
     width:'95%',
-    height:'90%',
+    height:'98%',
     backgroundColor:colors.gray,
     borderRadius:10,
+    marginTop:'3%'
   },
   inputsWrapper:{
     alignItems:'center'

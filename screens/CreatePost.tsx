@@ -1,4 +1,4 @@
-import { Dimensions, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Dimensions, GestureResponderEvent, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 // colors
@@ -8,8 +8,16 @@ import { Formik } from 'formik'
 import * as yup from 'yup'
 // Firebase
 import {addDoc, collection, serverTimestamp} from 'firebase/firestore'
-import { auth, db } from '../firebase/firebase'
+import { auth, db, storage } from '../firebase/firebase'
 import { DrawerNavigationProp } from '@react-navigation/drawer'
+// Image picker
+import * as ImagePicker from 'react-native-image-picker'
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+// Library to generate an ID
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
+// Library to show videos
+import Video from 'react-native-video'
 
 type HomeProps = {
   Home: {fromSignUp:boolean, fromCreatePost:boolean} | undefined
@@ -26,16 +34,77 @@ export default function CreatePost() {
   },[])
 
   const [deviceHeight] = useState(Dimensions.get('window').height)
+  const [imageIcon] = useState(require('../assets/images/image-icon.png'))
+  const [videoIcon] = useState(require('../assets/images/video-icon.png'))
   const [creationInProgress, setCreationInProgress] = useState<boolean>(false)
 
   const blogSchema = yup.object().shape({
     title:yup.string().min(2, "Title must be at least 2 characters long"),
     blog:yup.string().min(2, "Blog must be at least 2 characters long")
   })
+  
+  const [selectedImage, setSelectedImage] = useState<string>()
 
-  async function createPost(title:string, blog:String){
+  const selectImage = () => {
+    ImagePicker.launchImageLibrary({mediaType:'photo'}, res => {
+      if(res.assets){
+        setSelectedImage(res.assets[0].uri)
+      }
+    })
+  }
+
+  const [selectedVideo, setSelectedVideo] = useState<string>()
+  const [videoError, setVideoError] = useState<string>('')
+
+  const selectVideo = () => {
+    ImagePicker.launchImageLibrary({mediaType:'video'}, res => {
+      if(res.assets){
+        setSelectedVideo(res.assets[0].uri)
+      }
+    })
+  }
+
+  const createPost = async (title:string, blog:string) => {
+
     if(auth.currentUser !== null){
+
     setCreationInProgress(true)
+    // Upload image
+    let pictureName = ''
+    let postImageUrl = ''
+    if(selectedImage){
+      pictureName = `PostPictures/${uuidv4()}`
+      const imageFile = await fetch(selectedImage)
+      const blob = await imageFile.blob()
+      const pictureRef = ref(storage, pictureName)
+      await uploadBytes(pictureRef, blob).then(res => console.log("Image uploaded", res))
+      postImageUrl = await getDownloadURL(pictureRef)
+    }
+
+    let videoName = ''
+    let postVideoUrl = ''
+    if(selectedVideo){
+      videoName = `PostVideos/${uuidv4()}`
+      let videoFile;
+      let blob
+      fetch(selectedVideo).then(res => {
+        console.log("Video fetched:", res)
+        videoFile = res
+        blob = videoFile.blob
+        setVideoError('')
+      }).catch(err => {
+        console.log(err)
+        setVideoError(`${err}`)
+        return
+      })
+      const videoRef = ref(storage, videoName)
+      if(videoFile){
+        await uploadBytes(videoRef, videoFile).then(res => console.log("Video uploaded:",))
+        postVideoUrl = await getDownloadURL(videoRef)
+      }
+      
+    }
+
     const postsCollection = collection(db, 'posts')
     await addDoc(postsCollection, {
       authorDetails:{
@@ -46,12 +115,12 @@ export default function CreatePost() {
       },
       title,
       blog,
-      picture:'',
-      pictureName:'',
-      video:'',
-      videoName:'',
+      picture:postImageUrl,
+      pictureName:pictureName,
+      video:postVideoUrl,
+      videoName:videoName,
       createdAt:serverTimestamp(),
-      lastUpdatedAt:serverTimestamp()
+      lastUpdatedAt:serverTimestamp(),
     })
     setCreationInProgress(false)
     navigation.navigate('Home', {fromSignUp:false, fromCreatePost:true})
@@ -90,9 +159,22 @@ export default function CreatePost() {
             autoCapitalize='none'
           />
           {errors.blog && (<Text style={styles.error}>{errors.blog}</Text>)}
+          <View style={styles.fileBtnsWrapper}>
+            {/* Add image button */}
+            <View style={styles.imageVideoBtnWrapper}>
+              <Pressable onPress={selectImage}><Image source={imageIcon} style={styles.fileBtns}/></Pressable>
+              {selectedImage && <Image source={{uri:selectedImage}} style={{width:40, height:40}}/>}
+            </View>
+            {/* Add video button */}
+            <View style={styles.imageVideoBtnWrapper}>
+              <Pressable onPress={selectVideo}><Image source={videoIcon} style={styles.fileBtns}/></Pressable>
+              {selectedVideo && <Video source={{uri:selectedVideo}} style={{width:80, height:80}} controls={false}/>}
+            </View>
+          </View>
+          {videoError && <Text style={styles.error}>Failed to fetch video for upload: {videoError}</Text>}
          </View>
          
-         <Pressable onPress={handleSubmit} style={[styles.createPostBtn, creationInProgress ? styles.disabledBtn : {}]} disabled={creationInProgress}><Text style={styles.createBtnText}>{creationInProgress ? 'Creating Blog' : 'Create Blog'}</Text></Pressable>
+         <Pressable onPress={handleSubmit as unknown as (e: GestureResponderEvent) => void} style={[styles.createPostBtn, creationInProgress ? styles.disabledBtn : {}]} disabled={creationInProgress}><Text style={styles.createBtnText}>{creationInProgress ? 'Creating Blog' : 'Create Blog'}</Text></Pressable>
        </View>
      )}
    </Formik>
@@ -138,5 +220,22 @@ const styles = StyleSheet.create({
   },
   disabledBtn:{
     opacity:.5
-}
+  },
+  fileBtnsWrapper:{
+    width:'90%',
+    marginLeft:'5%',
+    flexDirection:'row',
+    justifyContent:'space-around',
+    alignItems:'center',
+    marginTop:20,
+  },
+  fileBtns:{
+    width:40,
+    height:40,
+    marginHorizontal:15
+  },
+  imageVideoBtnWrapper:{
+    flexDirection:'row',
+    alignItems:'center'
+  }
 })
