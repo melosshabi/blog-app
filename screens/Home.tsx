@@ -35,9 +35,7 @@ export interface Posts{
 }
 
 export default function Home({route}: HomeProps) {
-  useEffect(() => {
-    // auth.onAuthStateChanged(() => {console.log(auth.currentUser)})
-  }, [])
+
   const [dots] = useState(require('../assets/images/dots.png'))
   const [userIcon] = useState(require('../assets/images/user.png'))
 

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { DrawerItem, createDrawerNavigator } from '@react-navigation/drawer'
 import { NavigationContainer } from '@react-navigation/native'
 // Utils
@@ -26,7 +26,7 @@ function DrawerContent({navigation} : any){
        {auth.currentUser && <DrawerItem label="My posts" style={styles.drawerBtns} labelStyle={styles.drawerBtnsText} onPress={() => navigation.navigate('MyPosts')}/>}
       </View>
 
-      {auth.currentUser === null &&
+      {!auth.currentUser  &&
       <View style={styles.authBtnsWrapper}>
         <DrawerItem label="Sign in" onPress={() => navigation.navigate('SignIn')} style={[styles.drawerBtns, styles.authBtns]} labelStyle={styles.authBtnsText} />
         <DrawerItem label="Sign up" onPress={() => navigation.navigate('SignUp')} style={[styles.drawerBtns, styles.authBtns]} labelStyle={styles.authBtnsText} />
@@ -35,7 +35,7 @@ function DrawerContent({navigation} : any){
       {auth.currentUser && 
         
         <View style={styles.emailWrapper}>
-          <Text style={styles.email}>{auth.currentUser.email}</Text>
+          <Text style={styles.email}>{auth.currentUser?.email}</Text>
           <Pressable style={styles.signOutBtn}><Text style={styles.signOutBtnText}>Sign out</Text></Pressable>
         </View>}
     </View>

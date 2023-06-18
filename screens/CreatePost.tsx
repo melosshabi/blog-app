@@ -57,7 +57,7 @@ export default function CreatePost() {
   const [videoError, setVideoError] = useState<string>('')
 
   const selectVideo = () => {
-    ImagePicker.launchImageLibrary({mediaType:'video'}, res => {
+    ImagePicker.launchImageLibrary({mediaType:'video'}, async res => {
       if(res.assets){
         setSelectedVideo(res.assets[0].uri)
       }
@@ -77,7 +77,7 @@ export default function CreatePost() {
       const imageFile = await fetch(selectedImage)
       const blob = await imageFile.blob()
       const pictureRef = ref(storage, pictureName)
-      await uploadBytes(pictureRef, blob).then(res => console.log("Image uploaded", res))
+      await uploadBytes(pictureRef, blob)
       postImageUrl = await getDownloadURL(pictureRef)
     }
 
@@ -87,23 +87,20 @@ export default function CreatePost() {
       videoName = `PostVideos/${uuidv4()}`
       let videoFile;
       let blob
-      fetch(selectedVideo).then(res => {
-        console.log("Video fetched:", res)
-        videoFile = res
-        blob = videoFile.blob
-        setVideoError('')
-      }).catch(err => {
-        console.log(err)
+      try{
+        videoFile = await fetch(selectedVideo)
+        blob = await videoFile.blob()
+      }catch(err){
         setVideoError(`${err}`)
-        return
-      })
-      const videoRef = ref(storage, videoName)
-      if(videoFile){
-        await uploadBytes(videoRef, videoFile).then(res => console.log("Video uploaded:",))
-        postVideoUrl = await getDownloadURL(videoRef)
       }
-      
+      if(!videoError){
+        const videoRef = ref(storage, videoName)
+        if(blob){
+          await uploadBytes(videoRef, blob)
+          postVideoUrl = await getDownloadURL(videoRef)
+        }
     }
+  }
 
     const postsCollection = collection(db, 'posts')
     await addDoc(postsCollection, {
