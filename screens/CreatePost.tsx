@@ -9,10 +9,10 @@ import * as yup from 'yup'
 // Firebase
 import {addDoc, collection, serverTimestamp} from 'firebase/firestore'
 import { auth, db, storage } from '../firebase/firebase'
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { DrawerNavigationProp } from '@react-navigation/drawer'
 // Image picker
 import * as ImagePicker from 'react-native-image-picker'
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 // Library to generate an ID
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
