@@ -1,6 +1,6 @@
 # Blog App
 
-## This project is an android app of my blog website project and below there are a few images of how it looks
+## This project is an android app of my blog website and below you can find a few images of how it looks
 
 [apks]: https://github.com/melosshabi/blog-app/releases/tag/blog-app
 
