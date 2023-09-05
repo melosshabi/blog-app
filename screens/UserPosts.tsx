@@ -131,13 +131,20 @@ export default function UserPosts() {
           {item.video && <Video source={{uri:item.video}}  style={{width:'100%', height:400}} controls={true}/>}
           </View>
         </View>
-        {item.docId === postId && <Pressable style={styles.savePostBtn} onPress={savePost}><Text>Save</Text></Pressable>}
+        {/* Save post button */}
+        {item.docId === postId && <Pressable style={styles.savePostBtn} onPress={savePost}><Text style={{color:'white'}}>Save</Text></Pressable>}
         <Text style={styles.postDate}>{parseDate(item.createdAt)}</Text>
         </View>
         )}
         />
         {/* post options */}
-      {showMoreOptions && <Pressable onPress={() => setShowMoreOptions(false)} style={styles.moreOptionsWrapper}><View style={styles.moreOptionsWrapper}>
+      {showMoreOptions && <Pressable onPress={() => {
+        setPostId('')
+        setPostToEditContent('')
+        setShowMoreOptions(false)
+      }
+      } 
+        style={styles.moreOptionsWrapper}><View style={styles.moreOptionsWrapper}>
         <View style={styles.moreOptions}>
             {/* Edit Btn */}
             <Pressable onPress={() => {
@@ -188,7 +195,7 @@ const styles = StyleSheet.create({
     position:'absolute',
     left:0,
     top:0,
-    backgroundColor:colors.transparentBlack,
+    backgroundColor:colors.transparentBlack2,
     justifyContent:'flex-end'
   },
   moreOptions:{
@@ -200,7 +207,8 @@ const styles = StyleSheet.create({
   },
   btnText:{
     fontSize:25,
-    textAlign:'center'
+    textAlign:'center',
+    color:'white'
   },
   postActionsBtns:{
     height:'50%',
@@ -212,7 +220,8 @@ const styles = StyleSheet.create({
     justifyContent:'center'
   },
   author:{
-    fontSize:18
+    fontSize:18,
+    color:'white'
   },
   postTitle:{
     fontSize:18,
@@ -244,11 +253,12 @@ const styles = StyleSheet.create({
     padding:10,
     borderColor:'white',
     borderWidth:1,
-    alignItems:'center'
+    alignItems:'center',
   },
   postDate:{
     position:'absolute',
     bottom:5,
     right:5,
+    color:'white'
   }
 })

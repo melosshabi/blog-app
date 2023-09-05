@@ -62,6 +62,7 @@ export default function SignUp() {
            value={values.username}
            placeholder='Username'
            style={styles.inputs}
+           placeholderTextColor='white'
          />
          {errors.username && (<Text style={styles.error}>{errors.username}</Text>)}
          {/* Email */}
@@ -72,6 +73,7 @@ export default function SignUp() {
            placeholder='Email'
            style={styles.inputs}
            autoCapitalize='none'
+           placeholderTextColor='white'
          />
          {errors.email && (<Text style={styles.error}>{errors.email}</Text>)}
 
@@ -84,9 +86,10 @@ export default function SignUp() {
            style={styles.inputs}
            secureTextEntry={true}
            autoCapitalize='none'
+           placeholderTextColor='white'
          />
          {errors.password && (<Text style={styles.error}>{errors.password}</Text>)}
-         <Pressable onPress={handleSubmit} style={[styles.signUpBtn, creationInProgress ? styles.disabledBtn : {}]} disabled={creationInProgress}><Text style={styles.signUpBtnText}>{creationInProgress ? 'Creating account' : 'Sign Up'}</Text></Pressable>
+         <Pressable onPress={() => handleSubmit()} style={[styles.signUpBtn, creationInProgress ? styles.disabledBtn : {}]} disabled={creationInProgress}><Text style={styles.signUpBtnText}>{creationInProgress ? 'Creating account' : 'Sign Up'}</Text></Pressable>
        </View>
      )}
    </Formik>
@@ -117,7 +120,8 @@ const styles = StyleSheet.create({
         borderWidth:1,
         margin:5,
         borderRadius:8,
-        paddingHorizontal:10
+        paddingHorizontal:10,
+        color:'white'
     },
     error:{
         color:'#b4161b',

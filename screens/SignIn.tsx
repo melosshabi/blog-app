@@ -75,6 +75,7 @@ export default function SignIn() {
             placeholder='Email'
             style={styles.inputs}
             autoCapitalize='none'
+            placeholderTextColor='white'
           />
          
          {errors.email && (<Text style={styles.error}>{errors.email}</Text>)}
@@ -90,10 +91,11 @@ export default function SignIn() {
             style={styles.inputs}
             secureTextEntry={true}
             autoCapitalize='none'
+            placeholderTextColor='white'
           />
          </View>
          {passwordError && (<Text style={styles.error}>{passwordError}</Text>)}
-         <Pressable onPress={handleSubmit} style={[styles.signInBtn, signInProgress ? styles.disabledBtn : {}]} disabled={signInProgress}><Text style={styles.signInBtnText}>{signInProgress ? 'Signing in' : 'Sign In'}</Text></Pressable>
+         <Pressable onPress={() => handleSubmit()} style={[styles.signInBtn, signInProgress ? styles.disabledBtn : {}]} disabled={signInProgress}><Text style={styles.signInBtnText}>{signInProgress ? 'Signing in' : 'Sign In'}</Text></Pressable>
        </View>
      )}
    </Formik>
@@ -109,7 +111,8 @@ const styles = StyleSheet.create({
   headingText:{
     fontSize:32,
     textAlign:'center',
-    marginVertical:15
+    marginVertical:15,
+    color:'white'
   },
   inputWrapper:{
     marginVertical:20,
@@ -120,6 +123,7 @@ const styles = StyleSheet.create({
       margin:5,
       borderRadius:8,
       paddingHorizontal:10,
+      color:'white'
   },
   error:{
       color:'#b4161b',

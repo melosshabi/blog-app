@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
   drawerHeadingText:{
     fontSize:30,
     textAlign:'center',
+    color:'white'
   },
   drawerContent:{
   },
@@ -140,7 +141,8 @@ const styles = StyleSheet.create({
   },
   email:{
     fontSize:15,
-    marginLeft:5
+    marginLeft:5,
+    color:'white'
   },
   signOutBtn:{
     marginRight:5,
@@ -151,5 +153,6 @@ const styles = StyleSheet.create({
   },
   signOutBtnText:{
     fontSize:18,
+    color:'white'
   }
 })

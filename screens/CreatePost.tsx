@@ -141,6 +141,7 @@ export default function CreatePost() {
             placeholder='Blog Title'
             style={styles.inputs}
             autoCapitalize='none'
+            placeholderTextColor='white'
           />
          
          {errors.title && (<Text style={styles.error}>{errors.title}</Text>)}
@@ -154,6 +155,7 @@ export default function CreatePost() {
             placeholder='Blog'
             style={[styles.inputs, {height:deviceHeight / 4, textAlignVertical:'top'}]}
             autoCapitalize='none'
+            placeholderTextColor='white'
           />
           {errors.blog && (<Text style={styles.error}>{errors.blog}</Text>)}
           <View style={styles.fileBtnsWrapper}>
@@ -199,6 +201,7 @@ const styles = StyleSheet.create({
     borderWidth:1,
     borderRadius:8,
     marginLeft:'5%',
+    color:'white'
   },
   blogInput:{
   },

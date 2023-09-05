@@ -150,7 +150,13 @@ export default function Profile() {
             
             <View style={styles.inputWrapper}>
               <Text style={styles.inputLabels}>Username</Text>
-              <TextInput style={[styles.inputs, !userWantsToEditName ? styles.disabledInputs : {}]} placeholder={currentName !== null ? currentName : ''} editable={userWantsToEditName} value={newName} onChangeText={setNewName}/>
+              <TextInput style={[styles.inputs, !userWantsToEditName ? styles.disabledInputs : {}]} 
+                placeholder={currentName !== null ? currentName : ''} 
+                editable={userWantsToEditName} 
+                value={newName} 
+                onChangeText={setNewName}
+                placeholderTextColor='white'
+                />
               <Pressable style={styles.editBtns} onPress={() => {
                 setUserWantsToEditName(true)
                 setShowSaveBtn(true)
@@ -159,7 +165,13 @@ export default function Profile() {
 
             <View style={styles.inputWrapper}>
               <Text style={styles.inputLabels}>Email</Text>
-              <TextInput style={[styles.inputs, !userWantsToEditEmail ? styles.disabledInputs : {}]} placeholder={currentEmail !== null ? currentEmail : ''} editable={userWantsToEditEmail} value={newEmail} onChangeText={setNewEmail}/>
+              <TextInput style={[styles.inputs, !userWantsToEditEmail ? styles.disabledInputs : {}]} 
+                placeholder={currentEmail !== null ? currentEmail : ''} 
+                editable={userWantsToEditEmail} 
+                value={newEmail} 
+                onChangeText={setNewEmail}
+                placeholderTextColor='white'
+                />
               <Pressable style={styles.editBtns} onPress={() => {
                 setUserWantsToEditEmail(true)
                 setShowSaveBtn(true)
@@ -225,6 +237,7 @@ const styles = StyleSheet.create({
     borderRadius:8,
     paddingHorizontal:10,
     width:'90%',
+    color:'white'
   },
   inputLabels:{
     width:'90%',
